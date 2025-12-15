@@ -1,0 +1,145 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../base
+patches:
+  # Reduce PostgreSQL to single instance for local
+  - target:
+      kind: Cluster
+      name: trading-db
+    patch: |
+      - op: replace
+        path: /spec/instances
+        value: 1
+      - op: replace
+        path: /spec/storage/size
+        value: 5Gi
+      - op: replace
+        path: /spec/resources/requests/memory
+        value: 256Mi
+      - op: replace
+        path: /spec/resources/requests/cpu
+        value: 100m
+      - op: replace
+        path: /spec/resources/limits/memory
+        value: 512Mi
+      - op: replace
+        path: /spec/resources/limits/cpu
+        value: 500m
+  # Reduce Kafka controllers to single node
+  - target:
+      kind: KafkaNodePool
+      name: controllers
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/storage/size
+        value: 5Gi
+      - op: replace
+        path: /spec/storage/deleteClaim
+        value: true
+      - op: replace
+        path: /spec/resources/requests/memory
+        value: 256Mi
+      - op: replace
+        path: /spec/resources/requests/cpu
+        value: 100m
+      - op: replace
+        path: /spec/resources/limits/memory
+        value: 512Mi
+      - op: replace
+        path: /spec/resources/limits/cpu
+        value: 250m
+  # Reduce Kafka brokers to single node
+  - target:
+      kind: KafkaNodePool
+      name: brokers
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/storage/size
+        value: 5Gi
+      - op: replace
+        path: /spec/storage/deleteClaim
+        value: true
+      - op: replace
+        path: /spec/resources/requests/memory
+        value: 512Mi
+      - op: replace
+        path: /spec/resources/requests/cpu
+        value: 250m
+      - op: replace
+        path: /spec/resources/limits/memory
+        value: 1Gi
+      - op: replace
+        path: /spec/resources/limits/cpu
+        value: 500m
+  # Adjust Kafka config for single node
+  - target:
+      kind: Kafka
+      name: cv-kafka-cluster
+    patch: |
+      - op: replace
+        path: /spec/kafka/config
+        value:
+          offsets.topic.replication.factor: 1
+          transaction.state.log.replication.factor: 1
+          transaction.state.log.min.isr: 1
+          default.replication.factor: 1
+          min.insync.replicas: 1
+          num.network.threads: 2
+          num.io.threads: 4
+          log.retention.hours: 24
+          log.segment.bytes: 536870912
+          auto.create.topics.enable: "true"
+          group.initial.rebalance.delay.ms: 0
+  # Reduce topic replicas
+  - target:
+      kind: KafkaTopic
+      name: binance-btcusdc-trades
+    patch: |
+      - op: replace
+        path: /spec/partitions
+        value: 1
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/config/retention.ms
+        value: "86400000"
+      - op: replace
+        path: /spec/config/min.insync.replicas
+        value: "1"
+  - target:
+      kind: KafkaTopic
+      name: trading-events
+    patch: |
+      - op: replace
+        path: /spec/partitions
+        value: 1
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/config/retention.ms
+        value: "86400000"
+      - op: replace
+        path: /spec/config/min.insync.replicas
+        value: "1"
+  - target:
+      kind: KafkaTopic
+      name: analytics-results
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/config/retention.ms
+        value: "86400000"
+      - op: replace
+        path: /spec/config/min.insync.replicas
+        value: "1"

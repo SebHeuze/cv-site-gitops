@@ -1,0 +1,123 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: frontend
+  namespace: cv-site-prd
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`cv.sebastien.sh`)
+      kind: Rule
+      services:
+        - name: frontend
+          port: 80
+  tls:
+    secretName: frontend-tls
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: api
+  namespace: cv-site-prd
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`api.sebastien.sh`) && (PathPrefix(`/api/trades`) || PathPrefix(`/api/game`) || PathPrefix(`/actuator`) || PathPrefix(`/ws`))
+      kind: Rule
+      services:
+        - name: trading-simulator
+          port: 8080
+  tls:
+    secretName: api-tls
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: authelia
+  namespace: authelia
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`auth.sebastien.sh`)
+      kind: Rule
+      services:
+        - name: authelia
+          port: 9091
+  tls:
+    secretName: authelia-tls
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: grafana
+  namespace: monitoring-prd
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`grafana.sebastien.sh`)
+      kind: Rule
+      services:
+        - name: grafana
+          port: 3000
+      middlewares:
+        - name: authelia
+          namespace: authelia
+  tls:
+    secretName: grafana-tls
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: akhq
+  namespace: monitoring-prd
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`akhq.sebastien.sh`)
+      kind: Rule
+      services:
+        - name: akhq
+          port: 8080
+      middlewares:
+        - name: authelia
+          namespace: authelia
+  tls:
+    secretName: akhq-tls
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: prometheus
+  namespace: monitoring-prd
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`prometheus.sebastien.sh`)
+      kind: Rule
+      services:
+        - name: prometheus
+          port: 9090
+      middlewares:
+        - name: authelia
+          namespace: authelia
+  tls:
+    secretName: prometheus-tls

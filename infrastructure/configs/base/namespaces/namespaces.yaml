@@ -1,0 +1,33 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kafka-prd
+  labels:
+    environment: production
+    component: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cv-site-prd
+  labels:
+    environment: production
+    component: application
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring-prd
+  labels:
+    environment: production
+    component: monitoring
+    podmonitorscrape: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: authelia
+  labels:
+    environment: production
+    component: security

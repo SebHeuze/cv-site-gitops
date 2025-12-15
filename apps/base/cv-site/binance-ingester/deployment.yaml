@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: binance-ingester
+  namespace: cv-site-prd
+  labels:
+    app: binance-ingester
+spec:
+  replicas: 1  # Singleton - WebSocket connection
+  strategy:
+    type: Recreate  # Only one instance at a time for WebSocket
+  selector:
+    matchLabels:
+      app: binance-ingester
+  template:
+    metadata:
+      labels:
+        app: binance-ingester
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: binance-ingester
+          image: ghcr.io/sebheuze/cv-site/binance-ingester:main-7abb625
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: cv-kafka-cluster-kafka-bootstrap.kafka-prd.svc.cluster.local:9092
+            - name: BINANCE_WS_URL
+              value: wss://stream.binance.com:9443/ws/btcusdc@aggTrade
+            - name: SPRING_PROFILES_ACTIVE
+              value: production
+          resources:
+            requests:
+              memory: 512Mi
+              cpu: 250m
+            limits:
+              memory: 1Gi
+              cpu: 1000m
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 5
