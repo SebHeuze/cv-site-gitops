@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: cv-site-prd
+resources:
+  - namespace.yaml
+  - secrets.yaml
+  - binance-ingester/deployment.yaml
+  - binance-ingester/service.yaml
+  - trading-simulator/deployment.yaml
+  - trading-simulator/service.yaml
+  - frontend/deployment.yaml
+  - frontend/service.yaml

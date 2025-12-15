@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trading-simulator
+  namespace: cv-site-prd
+  labels:
+    app: trading-simulator
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: trading-simulator
+  template:
+    metadata:
+      labels:
+        app: trading-simulator
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: trading-simulator
+          image: ghcr.io/sebheuze/cv-site/trading-simulator:main-7abb625
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: cv-kafka-cluster-kafka-bootstrap.kafka-prd.svc.cluster.local:9092
+            - name: SPRING_PROFILES_ACTIVE
+              value: production
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: update
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://trading-db-rw.cv-site-prd.svc.cluster.local:5432/trading_db
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: password
+          resources:
+            requests:
+              memory: 768Mi
+              cpu: 500m
+            limits:
+              memory: 1536Mi
+              cpu: 1500m
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 5

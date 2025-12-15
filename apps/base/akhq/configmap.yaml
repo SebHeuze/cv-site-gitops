@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: akhq-config
+  namespace: monitoring-prd
+data:
+  application.yml: |
+    akhq:
+      connections:
+        cv-kafka-cluster:
+          properties:
+            bootstrap.servers: "cv-kafka-cluster-kafka-bootstrap.kafka-prd.svc.cluster.local:9092"
+      server:
+        access-log:
+          enabled: true

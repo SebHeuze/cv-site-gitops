@@ -1,0 +1,27 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: databases
+  namespace: flux-system
+spec:
+  interval: 10m
+  retryInterval: 1m
+  timeout: 10m
+  dependsOn:
+    - name: infra-configs
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./databases/production
+  prune: true
+  wait: true
+  healthChecks:
+    - apiVersion: postgresql.cnpg.io/v1
+      kind: Cluster
+      name: trading-db
+      namespace: cv-site-prd
+    - apiVersion: kafka.strimzi.io/v1beta2
+      kind: Kafka
+      name: cv-kafka-cluster
+      namespace: kafka-prd

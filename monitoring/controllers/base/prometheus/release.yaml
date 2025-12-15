@@ -1,0 +1,88 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kube-prometheus-stack
+  namespace: monitoring-prd
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: kube-prometheus-stack
+      version: "65.x"
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  values:
+    # Disable components we don't need
+    alertmanager:
+      enabled: false
+    grafana:
+      enabled: false  # We use separate Grafana deployment
+
+    prometheus:
+      prometheusSpec:
+        retention: 15d
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: local-path
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 50Gi
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 500m
+          limits:
+            memory: 2Gi
+            cpu: 1000m
+        # Monitor all namespaces
+        podMonitorNamespaceSelector: {}
+        podMonitorSelector: {}
+        serviceMonitorNamespaceSelector: {}
+        serviceMonitorSelector: {}
+        # Additional scrape configs
+        additionalScrapeConfigs:
+          - job_name: 'kafka-exporter'
+            static_configs:
+              - targets:
+                  - 'cv-kafka-cluster-kafka-exporter.kafka-prd.svc.cluster.local:9404'
+          - job_name: 'binance-ingester'
+            metrics_path: /actuator/prometheus
+            static_configs:
+              - targets:
+                  - 'binance-ingester.cv-site-prd.svc.cluster.local:8080'
+          - job_name: 'trading-simulator'
+            metrics_path: /actuator/prometheus
+            static_configs:
+              - targets:
+                  - 'trading-simulator.cv-site-prd.svc.cluster.local:8080'
+
+    # Node exporter for node metrics
+    nodeExporter:
+      enabled: true
+
+    # Kube-state-metrics for Kubernetes object metrics
+    kubeStateMetrics:
+      enabled: true
+
+    # Prometheus operator
+    prometheusOperator:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 100Mi
+        limits:
+          cpu: 200m
+          memory: 200Mi

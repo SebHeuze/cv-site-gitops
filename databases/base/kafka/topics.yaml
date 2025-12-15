@@ -1,0 +1,48 @@
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: binance-btcusdc-trades
+  namespace: kafka-prd
+  labels:
+    strimzi.io/cluster: cv-kafka-cluster
+spec:
+  partitions: 3
+  replicas: 3
+  config:
+    retention.ms: "604800000"  # 7 days
+    compression.type: lz4
+    cleanup.policy: delete
+    min.insync.replicas: "2"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: trading-events
+  namespace: kafka-prd
+  labels:
+    strimzi.io/cluster: cv-kafka-cluster
+spec:
+  partitions: 3
+  replicas: 3
+  config:
+    retention.ms: "2592000000"  # 30 days
+    compression.type: lz4
+    cleanup.policy: delete
+    min.insync.replicas: "2"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: analytics-results
+  namespace: kafka-prd
+  labels:
+    strimzi.io/cluster: cv-kafka-cluster
+spec:
+  partitions: 1
+  replicas: 3
+  config:
+    retention.ms: "604800000"  # 7 days
+    compression.type: lz4
+    cleanup.policy: delete
+    min.insync.replicas: "2"

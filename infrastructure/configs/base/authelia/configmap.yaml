@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: authelia-config
+  namespace: authelia
+data:
+  configuration.yml: |
+    theme: light
+    default_redirection_url: https://cv.sebastien.sh
+
+    server:
+      host: 0.0.0.0
+      port: 9091
+
+    log:
+      level: info
+
+    totp:
+      issuer: sebastien.sh
+      period: 30
+      skew: 1
+
+    authentication_backend:
+      file:
+        path: /config/users_database.yml
+
+    access_control:
+      default_policy: deny
+      rules:
+        # Public services
+        - domain: cv.sebastien.sh
+          policy: bypass
+        - domain: api.sebastien.sh
+          policy: bypass
+        - domain: auth.sebastien.sh
+          policy: bypass
+        # Protected services - require 2FA
+        - domain: grafana.sebastien.sh
+          policy: two_factor
+        - domain: akhq.sebastien.sh
+          policy: two_factor
+        - domain: prometheus.sebastien.sh
+          policy: two_factor
+
+    session:
+      name: authelia_session
+      domain: sebastien.sh
+      expiration: 3600
+      inactivity: 300
+      remember_me_duration: 1M
+
+    regulation:
+      max_retries: 3
+      find_time: 120
+      ban_time: 300
+
+    storage:
+      local:
+        path: /data/db.sqlite3
+
+    notifier:
+      filesystem:
+        filename: /data/notification.txt
+
+  users_database.yml: |
+    users:
+      admin:
+        displayname: Administrator
+        # Password: admin (CHANGE THIS IN PRODUCTION!)
+        # Generate with: docker run authelia/authelia:latest authelia crypto hash generate argon2 --password 'yourpassword'
+        password: "[REDACTED_HASH]"
+        email: [REDACTED_EMAIL]
+        groups:
+          - admins
