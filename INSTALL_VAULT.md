@@ -4,9 +4,9 @@ This guide explains how to install and configure HashiCorp Vault as a standalone
 
 ## Prerequisites
 
-- Proxmox VE 7.x or 8.x
+- Proxmox VE 9.x
 - Network access between Kubernetes nodes and the Vault VM
-- Ubuntu 22.04 LTS ISO (or Debian 12)
+- Ubuntu 24.04 LTS ISO (or Debian 12)
 
 ## 1. Create the VM in Proxmox
 
@@ -18,7 +18,7 @@ This guide explains how to install and configure HashiCorp Vault as a standalone
    - VM ID: e.g., `200`
    - Name: `vault`
 3. **OS**:
-   - ISO Image: `ubuntu-22.04-live-server-amd64.iso`
+   - ISO Image: `ubuntu-24.04-live-server-amd64.iso`
 4. **System**:
    - Machine: `q35`
    - BIOS: `OVMF (UEFI)` or `SeaBIOS`
@@ -41,7 +41,7 @@ qm create 200 --name vault --memory 2048 --cores 2 \
   --net0 virtio,bridge=vmbr0 \
   --scsihw virtio-scsi-pci \
   --scsi0 local-lvm:20 \
-  --ide2 local:iso/ubuntu-22.04-live-server-amd64.iso,media=cdrom \
+  --ide2 local:iso/ubuntu-24.04-live-server-amd64.iso,media=cdrom \
   --boot order=scsi0;ide2
 ```
 
