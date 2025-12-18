@@ -22,8 +22,8 @@ spec:
     remediation:
       retries: 3
   values:
-    watchNamespaces:
-      - kafka-prd
+    # Watch all namespaces (kafka-prd created later in databases layer)
+    watchAnyNamespace: true
     defaultImageRegistry: quay.io
     featureGates: "+UseKRaft"
     resources:

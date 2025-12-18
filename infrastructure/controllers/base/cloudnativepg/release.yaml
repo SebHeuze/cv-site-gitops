@@ -23,7 +23,8 @@ spec:
       retries: 3
   values:
     monitoring:
-      podMonitorEnabled: true
+      # Disabled - PodMonitor CRD not available until Prometheus is installed
+      podMonitorEnabled: false
     resources:
       requests:
         cpu: 100m
