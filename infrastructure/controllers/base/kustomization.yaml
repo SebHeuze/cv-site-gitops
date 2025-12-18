@@ -7,4 +7,4 @@ resources:
   - strimzi-kafka
   - cloudnativepg
   - external-secrets
-  - vault
+  # Vault is deployed externally on Proxmox VM - see INSTALL_VAULT.md
