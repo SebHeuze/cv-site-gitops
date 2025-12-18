@@ -8,18 +8,20 @@ Complete Kubernetes infrastructure using GitOps with **Flux CD**, **Traefik**, *
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │                              Flux CD (GitOps)                                 │
 │                                                                               │
-│  ┌────────────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐ │
-│  │ Infrastructure │  │Databases │  │   Apps   │  │Monitoring│  │  Vault   │ │
-│  │  Controllers   │  │          │  │          │  │          │  │          │ │
-│  └───────┬────────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘ │
-└──────────┼────────────────┼─────────────┼────────────┼──────────────┼───────┘
-           │                │             │            │              │
-           ▼                ▼             ▼            ▼              ▼
-     ┌──────────┐     ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐
-     │ Traefik  │     │CloudNPG  │  │ Frontend │  │Prometheus│  │ External │
-     │cert-mgr  │     │PostgreSQL│  │ Backend  │  │ Grafana  │  │ Secrets  │
-     │ Strimzi  │     │  Kafka   │  │ Ingester │  │  AKHQ    │  │          │
-     └──────────┘     └──────────┘  └──────────┘  └──────────┘  └──────────┘
+│  ┌────────────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐               │
+│  │ Infrastructure │  │Databases │  │   Apps   │  │Monitoring│               │
+│  │  Controllers   │  │          │  │          │  │          │               │
+│  └───────┬────────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘               │
+└──────────┼────────────────┼─────────────┼────────────┼──────────────────────┘
+           │                │             │            │
+           ▼                ▼             ▼            ▼
+     ┌──────────┐     ┌──────────┐  ┌──────────┐  ┌──────────┐   ┌──────────┐
+     │ Traefik  │     │CloudNPG  │  │ Frontend │  │Prometheus│   │  Vault   │
+     │cert-mgr  │     │PostgreSQL│  │ Backend  │  │ Grafana  │   │(Proxmox) │
+     │ Strimzi  │     │  Kafka   │  │ Ingester │  │  AKHQ    │   │ External │
+     │ ESO      │     └──────────┘  └──────────┘  └──────────┘   └──────────┘
+     └──────────┘           ▲                                          │
+                            └──────────── secrets sync ────────────────┘
 ```
 
 ## Directory Structure
@@ -92,32 +94,36 @@ flux bootstrap github \
   --personal
 ```
 
-### 3. Initialize HashiCorp Vault
+### 3. Setup External HashiCorp Vault
 
-After Flux deploys Vault, initialize and unseal it:
+Vault runs as a separate VM on Proxmox. See **[INSTALL_VAULT.md](INSTALL_VAULT.md)** for complete installation instructions.
+
+**Quick summary:**
+1. Create Ubuntu VM on Proxmox
+2. Install HashiCorp Vault
+3. Initialize and unseal Vault
+4. Create secrets for cv-site-gitops
+
+### 4. Connect Kubernetes to External Vault
+
+After Vault is running on Proxmox:
 
 ```bash
-# Initialize Vault
-kubectl exec -it vault-0 -n vault -- vault operator init
+# Update the ClusterSecretStore with your Vault VM IP
+# Edit: infrastructure/configs/base/external-secrets/cluster-secret-store.yaml
 
-# Save the unseal keys and root token!
-
-# Unseal with 3 of 5 keys
-kubectl exec -it vault-0 -n vault -- vault operator unseal <key1>
-kubectl exec -it vault-0 -n vault -- vault operator unseal <key2>
-kubectl exec -it vault-0 -n vault -- vault operator unseal <key3>
-
-# Enable KV secrets engine
-kubectl exec -it vault-0 -n vault -- vault login
-kubectl exec -it vault-0 -n vault -- vault secrets enable -path=secret kv-v2
-
-# Enable Kubernetes auth
-kubectl exec -it vault-0 -n vault -- vault auth enable kubernetes
+# Create the Vault token secret in Kubernetes
+kubectl create secret generic vault-token \
+  -n external-secrets \
+  --from-literal=token=<your-vault-token>
 ```
 
-### 4. Add Secrets to Vault
+### 5. Add Secrets to Vault (on Vault VM)
 
 ```bash
+export VAULT_ADDR='http://<vault-vm-ip>:8200'
+vault login
+
 # GHCR credentials
 vault kv put secret/cv-site/ghcr \
   username=sebheuze \
@@ -140,7 +146,13 @@ vault kv put secret/cv-site/authelia \
 Flux Kustomizations deploy in this order using `dependsOn`:
 
 ```
-1. infra-controllers → Traefik, cert-manager, Strimzi, CNPG, ESO, Vault
+                                    ┌─────────────────────┐
+                                    │  External Vault     │
+                                    │  (Proxmox VM)       │
+                                    └──────────┬──────────┘
+                                               │ secrets
+                                               ▼
+1. infra-controllers → Traefik, cert-manager, Strimzi, CNPG, ESO
           │
           ▼
 2. infra-configs → Namespaces, ClusterIssuers, middlewares, ClusterSecretStore
