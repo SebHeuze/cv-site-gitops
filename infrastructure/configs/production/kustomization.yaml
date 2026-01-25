@@ -4,3 +4,4 @@ resources:
   - ../base
   - cert-manager/clusterissuer-letsencrypt.yaml
   - traefik/ingressroutes.yaml
+  - certificates.yaml
