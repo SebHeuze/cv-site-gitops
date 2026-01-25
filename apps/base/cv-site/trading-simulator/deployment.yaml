@@ -19,7 +19,7 @@ spec:
         - name: ghcr-secret
       containers:
         - name: trading-simulator
-          image: ghcr.io/sebheuze/cv-site/trading-simulator:main-7abb625
+          image: ghcr.io/sebheuze/cv-site/trading-simulator:main-cc18219
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
