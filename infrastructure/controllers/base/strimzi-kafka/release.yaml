@@ -22,8 +22,9 @@ spec:
     remediation:
       retries: 3
   values:
-    # Watch all namespaces (kafka-prd created later in databases layer)
-    watchAnyNamespace: true
+    # Watch specific namespaces instead of all (more secure and reliable)
+    watchNamespaces:
+      - kafka-prd
     defaultImageRegistry: quay.io
     # Note: KRaft is now the default in Strimzi 0.44.x, no feature gate needed
     resources:
