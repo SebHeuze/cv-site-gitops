@@ -71,7 +71,7 @@ spec:
       kind: Rule
       services:
         - name: grafana
-          port: 3000
+          port: 80
       middlewares:
         - name: authelia
           namespace: authelia
@@ -114,7 +114,7 @@ spec:
     - match: Host(`prometheus.sebastien.sh`)
       kind: Rule
       services:
-        - name: prometheus
+        - name: kube-prometheus-stack-prometheus
           port: 9090
       middlewares:
         - name: authelia
