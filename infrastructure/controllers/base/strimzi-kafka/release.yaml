@@ -26,7 +26,6 @@ spec:
     watchNamespaces:
       - kafka-prd
     defaultImageRegistry: quay.io
-    # Note: KRaft is now the default in Strimzi 0.44.x, no feature gate needed
     resources:
       requests:
         cpu: 200m
