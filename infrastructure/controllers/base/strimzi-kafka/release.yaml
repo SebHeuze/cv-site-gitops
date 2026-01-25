@@ -25,7 +25,7 @@ spec:
     # Watch all namespaces (kafka-prd created later in databases layer)
     watchAnyNamespace: true
     defaultImageRegistry: quay.io
-    featureGates: "+UseKRaft"
+    # Note: KRaft is now the default in Strimzi 0.44.x, no feature gate needed
     resources:
       requests:
         cpu: 200m
