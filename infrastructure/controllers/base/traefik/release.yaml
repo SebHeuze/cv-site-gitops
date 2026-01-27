@@ -26,11 +26,9 @@ spec:
       type: LoadBalancer
     ports:
       web:
-        redirections:
-          entryPoint:
-            to: websecure
-            scheme: https
-            permanent: true
+        redirectTo:
+          port: websecure
+          permanent: true
       websecure:
         tls:
           enabled: true
