@@ -31,10 +31,15 @@ spec:
               value: /secrets/STORAGE_ENCRYPTION_KEY
           volumeMounts:
             - name: config
-              mountPath: /config
+              mountPath: /config/configuration.yml
+              subPath: configuration.yml
               readOnly: true
             - name: secrets
               mountPath: /secrets
+              readOnly: true
+            - name: users-database
+              mountPath: /config/users_database.yml
+              subPath: users_database.yml
               readOnly: true
             - name: data
               mountPath: /data
@@ -64,6 +69,12 @@ spec:
         - name: secrets
           secret:
             secretName: authelia-secrets
+        - name: users-database
+          secret:
+            secretName: authelia-secrets
+            items:
+              - key: users_database.yml
+                path: users_database.yml
         - name: data
           persistentVolumeClaim:
             claimName: authelia-data
