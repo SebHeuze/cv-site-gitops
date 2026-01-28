@@ -5,6 +5,9 @@ metadata:
   namespace: traefik
 spec:
   interval: 30m
+  dependsOn:
+    - name: traefik-crds
+      namespace: traefik
   chart:
     spec:
       chart: traefik
@@ -26,9 +29,8 @@ spec:
       type: LoadBalancer
     ports:
       web:
-        redirectTo:
-          port: websecure
-          permanent: true
+        port: 8000
+        exposedPort: 80
       websecure:
         tls:
           enabled: true
