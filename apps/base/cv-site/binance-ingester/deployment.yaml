@@ -6,9 +6,9 @@ metadata:
   labels:
     app: binance-ingester
 spec:
-  replicas: 1  # Singleton - WebSocket connection
+  replicas: 1 # Singleton - WebSocket connection
   strategy:
-    type: Recreate  # Only one instance at a time for WebSocket
+    type: Recreate # Only one instance at a time for WebSocket
   selector:
     matchLabels:
       app: binance-ingester
@@ -21,7 +21,7 @@ spec:
         - name: ghcr-secret
       containers:
         - name: binance-ingester
-          image: ghcr.io/sebheuze/cv-site/binance-ingester:main-cc18219
+          image: ghcr.io/sebheuze/cv-site/binance-ingester:main-7c311af
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
