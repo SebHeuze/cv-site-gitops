@@ -3,5 +3,6 @@ kind: Kustomization
 resources:
   - ../base
   - cert-manager/clusterissuer-letsencrypt.yaml
+  - cert-manager/ovh-credentials-externalsecret.yaml
   - traefik/ingressroutes.yaml
   - certificates.yaml
