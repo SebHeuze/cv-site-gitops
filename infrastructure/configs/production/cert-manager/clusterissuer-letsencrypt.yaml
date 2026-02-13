@@ -10,9 +10,21 @@ spec:
     privateKeySecretRef:
       name: letsencrypt-prod-account-key
     solvers:
-      - http01:
-          ingress:
-            class: traefik
+      - dns01:
+          webhook:
+            groupName: acme.cert-manager.io
+            solverName: ovh
+            config:
+              endpoint: ovh-eu
+              applicationSecretRef:
+                name: ovh-credentials
+                key: applicationSecret
+              applicationKeyRef:
+                name: ovh-credentials
+                key: applicationKey
+              consumerKeyRef:
+                name: ovh-credentials
+                key: consumerKey
 ---
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
@@ -25,6 +37,18 @@ spec:
     privateKeySecretRef:
       name: letsencrypt-staging-account-key
     solvers:
-      - http01:
-          ingress:
-            class: traefik
+      - dns01:
+          webhook:
+            groupName: acme.cert-manager.io
+            solverName: ovh
+            config:
+              endpoint: ovh-eu
+              applicationSecretRef:
+                name: ovh-credentials
+                key: applicationSecret
+              applicationKeyRef:
+                name: ovh-credentials
+                key: applicationKey
+              consumerKeyRef:
+                name: ovh-credentials
+                key: consumerKey
