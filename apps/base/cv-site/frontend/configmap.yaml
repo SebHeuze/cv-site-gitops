@@ -6,5 +6,5 @@ metadata:
 data:
   config.json: |
     {
-      "grafanaPublicDashboardUrl": "https://grafana.sebastien.sh/public-dashboards/a1ba3ed7616e47bcb51534e7bde9c305"
+      "grafanaPublicDashboardUrl": "https://grafana.sebastien.sh/public-dashboards/97fa075b1dad4ffcaab0b7451edf4b1d"
     }
