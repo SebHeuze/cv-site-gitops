@@ -49,6 +49,7 @@ data:
             - grafana.sebastien.sh
           resources:
             - "^/public-dashboards/.*$"
+            - "^/public/.*$"
           policy: bypass
         # High-security services - require 2FA (admins group)
         - domain:
