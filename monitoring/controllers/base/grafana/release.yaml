@@ -244,6 +244,46 @@ spec:
                       }
                     }
                   }
+                },
+                {
+                  "id": 5,
+                  "title": "Kafka Trading Events/sec",
+                  "type": "timeseries",
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "prometheus_main"
+                  },
+                  "gridPos": { "x": 0, "y": 16, "w": 24, "h": 8 },
+                  "targets": [
+                    {
+                      "expr": "rate(kafka_producer_topic_record_send_total{topic=\"binance-btcusdt-trades\"}[1m])",
+                      "refId": "A"
+                    }
+                  ],
+                  "options": {
+                    "legend": {
+                      "displayMode": "list",
+                      "placement": "bottom",
+                      "showLegend": false
+                    }
+                  },
+                  "fieldConfig": {
+                    "defaults": {
+                      "unit": "reqps",
+                      "custom": {
+                        "drawStyle": "line",
+                        "lineInterpolation": "linear",
+                        "fillOpacity": 10,
+                        "showPoints": "never"
+                      },
+                      "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                          { "value": 0, "color": "green" }
+                        ]
+                      }
+                    }
+                  }
                 }
               ]
             }
