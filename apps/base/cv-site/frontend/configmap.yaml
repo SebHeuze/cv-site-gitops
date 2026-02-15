@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: cv-site-prd
+data:
+  config.json: |
+    {
+      "grafanaPublicDashboardUrl": "https://grafana.sebastien.sh/public-dashboards/a1ba3ed7616e47bcb51534e7bde9c305"
+    }

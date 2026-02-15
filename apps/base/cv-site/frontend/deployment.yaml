@@ -19,7 +19,7 @@ spec:
         - name: ghcr-secret
       containers:
         - name: frontend
-          image: ghcr.io/sebheuze/cv-site/frontend:main-7c311af
+          image: ghcr.io/sebheuze/cv-site/frontend:main-65708b4
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
@@ -43,3 +43,12 @@ spec:
               port: 80
             initialDelaySeconds: 10
             periodSeconds: 5
+          volumeMounts:
+            - name: config
+              mountPath: /usr/share/nginx/html/assets/config.json
+              subPath: config.json
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: frontend-config
