@@ -29,7 +29,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`api.k8s.local`) && (PathPrefix(`/api/trades`) || PathPrefix(`/api/game`) || PathPrefix(`/actuator`) || PathPrefix(`/ws`))
+    - match: Host(`api.k8s.local`) && (PathPrefix(`/api/trades`) || PathPrefix(`/api/game`) || PathPrefix(`/api/price`) || PathPrefix(`/actuator`) || PathPrefix(`/ws`))
       kind: Rule
       services:
         - name: trading-simulator

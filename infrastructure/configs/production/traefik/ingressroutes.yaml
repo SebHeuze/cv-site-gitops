@@ -51,7 +51,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`api.sebastien.sh`) && (PathPrefix(`/api/trades`) || PathPrefix(`/api/game`) || PathPrefix(`/actuator`) || PathPrefix(`/ws`))
+    - match: Host(`api.sebastien.sh`) && (PathPrefix(`/api/trades`) || PathPrefix(`/api/game`) || PathPrefix(`/api/price`) || PathPrefix(`/actuator`) || PathPrefix(`/ws`))
       kind: Rule
       services:
         - name: trading-simulator
