@@ -29,7 +29,7 @@ spec:
               value: cv-kafka-cluster-kafka-bootstrap.kafka-prd.svc.cluster.local:9092
             - name: SPRING_PROFILES_ACTIVE
               value: production
-            - name: SPRING_JPA_HIBERNATE_DDL_AUTOafana-admin-credentials
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
               value: update
             - name: SPRING_DATASOURCE_URL
               value: jdbc:postgresql://trading-db-rw.cv-site-prd.svc.cluster.local:5432/trading_db
