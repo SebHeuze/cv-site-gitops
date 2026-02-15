@@ -49,3 +49,14 @@ spec:
     browserXssFilter: true
     referrerPolicy: strict-origin-when-cross-origin
     frameDeny: true
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-to-cv
+  namespace: cv-site-prd
+spec:
+  redirectRegex:
+    regex: "^https://sebastien\\.sh/(.*)"
+    replacement: "https://cv.sebastien.sh/${1}"
+    permanent: true

@@ -2,6 +2,28 @@
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
+  name: root-redirect
+  namespace: cv-site-prd
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`sebastien.sh`)
+      kind: Rule
+      services:
+        - name: frontend
+          port: 80
+      middlewares:
+        - name: redirect-to-cv
+          namespace: cv-site-prd
+  tls:
+    secretName: root-domain-tls
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
   name: frontend
   namespace: cv-site-prd
   annotations:
