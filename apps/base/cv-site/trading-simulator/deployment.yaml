@@ -19,7 +19,7 @@ spec:
         - name: ghcr-secret
       containers:
         - name: trading-simulator
-          image: ghcr.io/sebheuze/cv-site/trading-simulator:main-65708b4
+          image: ghcr.io/sebheuze/cv-site/trading-simulator:main-c7349d7
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -29,7 +29,7 @@ spec:
               value: cv-kafka-cluster-kafka-bootstrap.kafka-prd.svc.cluster.local:9092
             - name: SPRING_PROFILES_ACTIVE
               value: production
-            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTOafana-admin-credentials
               value: update
             - name: SPRING_DATASOURCE_URL
               value: jdbc:postgresql://trading-db-rw.cv-site-prd.svc.cluster.local:5432/trading_db
