@@ -22,8 +22,15 @@ spec:
   values:
     replicas: 1
 
-    adminUser: admin
-    adminPassword: [REDACTED]
+    # Use Vault-managed credentials via ExternalSecret
+    admin:
+      existingSecret: grafana-admin-credentials
+      userKey: admin-user
+      passwordKey: admin-password
+
+    # Disable init container that was causing permission issues
+    initChownData:
+      enabled: false
 
     persistence:
       enabled: true
@@ -80,141 +87,139 @@ spec:
         cluster-overview:
           json: |
             {
-              "dashboard": {
-                "title": "Cluster Overview",
-                "tags": ["kubernetes", "cluster"],
-                "timezone": "browser",
-                "schemaVersion": 38,
-                "version": 1,
-                "refresh": "30s",
-                "panels": [
-                  {
-                    "id": 1,
-                    "title": "Node CPU Usage",
-                    "type": "gauge",
-                    "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
-                    "targets": [
-                      {
-                        "expr": "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
-                        "refId": "A",
-                        "legendFormat": "{{instance}}"
-                      }
-                    ],
-                    "options": {
-                      "orientation": "auto",
-                      "showThresholdLabels": false,
-                      "showThresholdMarkers": true
-                    },
-                    "fieldConfig": {
-                      "defaults": {
-                        "unit": "percent",
-                        "min": 0,
-                        "max": 100,
-                        "thresholds": {
-                          "mode": "absolute",
-                          "steps": [
-                            { "value": 0, "color": "green" },
-                            { "value": 70, "color": "yellow" },
-                            { "value": 90, "color": "red" }
-                          ]
-                        }
-                      }
+              "title": "Cluster Overview",
+              "tags": ["kubernetes", "cluster"],
+              "timezone": "browser",
+              "schemaVersion": 38,
+              "version": 1,
+              "refresh": "30s",
+              "panels": [
+                {
+                  "id": 1,
+                  "title": "Node CPU Usage",
+                  "type": "gauge",
+                  "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+                  "targets": [
+                    {
+                      "expr": "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+                      "refId": "A",
+                      "legendFormat": "{{instance}}"
                     }
+                  ],
+                  "options": {
+                    "orientation": "auto",
+                    "showThresholdLabels": false,
+                    "showThresholdMarkers": true
                   },
-                  {
-                    "id": 2,
-                    "title": "Node Memory Usage",
-                    "type": "gauge",
-                    "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
-                    "targets": [
-                      {
-                        "expr": "100 - ((node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100)",
-                        "refId": "A",
-                        "legendFormat": "{{instance}}"
-                      }
-                    ],
-                    "options": {
-                      "orientation": "auto",
-                      "showThresholdLabels": false,
-                      "showThresholdMarkers": true
-                    },
-                    "fieldConfig": {
-                      "defaults": {
-                        "unit": "percent",
-                        "min": 0,
-                        "max": 100,
-                        "thresholds": {
-                          "mode": "absolute",
-                          "steps": [
-                            { "value": 0, "color": "green" },
-                            { "value": 70, "color": "yellow" },
-                            { "value": 90, "color": "red" }
-                          ]
-                        }
-                      }
-                    }
-                  },
-                  {
-                    "id": 3,
-                    "title": "Pod Count by Status",
-                    "type": "stat",
-                    "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
-                    "targets": [
-                      {
-                        "expr": "sum by (phase) (kube_pod_status_phase)",
-                        "refId": "A",
-                        "legendFormat": "{{phase}}"
-                      }
-                    ],
-                    "options": {
-                      "graphMode": "none",
-                      "colorMode": "value",
-                      "orientation": "auto",
-                      "textMode": "value_and_name"
-                    },
-                    "fieldConfig": {
-                      "defaults": {
-                        "mappings": [],
-                        "thresholds": {
-                          "mode": "absolute",
-                          "steps": [
-                            { "value": 0, "color": "text" }
-                          ]
-                        }
-                      }
-                    }
-                  },
-                  {
-                    "id": 4,
-                    "title": "Cluster Uptime",
-                    "type": "stat",
-                    "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
-                    "targets": [
-                      {
-                        "expr": "time() - node_boot_time_seconds",
-                        "refId": "A",
-                        "legendFormat": "{{instance}}"
-                      }
-                    ],
-                    "options": {
-                      "graphMode": "none",
-                      "colorMode": "value",
-                      "orientation": "auto",
-                      "textMode": "value_and_name"
-                    },
-                    "fieldConfig": {
-                      "defaults": {
-                        "unit": "s",
-                        "mappings": [],
-                        "thresholds": {
-                          "mode": "absolute",
-                          "steps": [
-                            { "value": 0, "color": "green" }
-                          ]
-                        }
+                  "fieldConfig": {
+                    "defaults": {
+                      "unit": "percent",
+                      "min": 0,
+                      "max": 100,
+                      "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                          { "value": 0, "color": "green" },
+                          { "value": 70, "color": "yellow" },
+                          { "value": 90, "color": "red" }
+                        ]
                       }
                     }
                   }
-                ]
-              }
+                },
+                {
+                  "id": 2,
+                  "title": "Node Memory Usage",
+                  "type": "gauge",
+                  "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+                  "targets": [
+                    {
+                      "expr": "100 - ((node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100)",
+                      "refId": "A",
+                      "legendFormat": "{{instance}}"
+                    }
+                  ],
+                  "options": {
+                    "orientation": "auto",
+                    "showThresholdLabels": false,
+                    "showThresholdMarkers": true
+                  },
+                  "fieldConfig": {
+                    "defaults": {
+                      "unit": "percent",
+                      "min": 0,
+                      "max": 100,
+                      "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                          { "value": 0, "color": "green" },
+                          { "value": 70, "color": "yellow" },
+                          { "value": 90, "color": "red" }
+                        ]
+                      }
+                    }
+                  }
+                },
+                {
+                  "id": 3,
+                  "title": "Pod Count by Status",
+                  "type": "stat",
+                  "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+                  "targets": [
+                    {
+                      "expr": "sum by (phase) (kube_pod_status_phase)",
+                      "refId": "A",
+                      "legendFormat": "{{phase}}"
+                    }
+                  ],
+                  "options": {
+                    "graphMode": "none",
+                    "colorMode": "value",
+                    "orientation": "auto",
+                    "textMode": "value_and_name"
+                  },
+                  "fieldConfig": {
+                    "defaults": {
+                      "mappings": [],
+                      "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                          { "value": 0, "color": "text" }
+                        ]
+                      }
+                    }
+                  }
+                },
+                {
+                  "id": 4,
+                  "title": "Cluster Uptime",
+                  "type": "stat",
+                  "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+                  "targets": [
+                    {
+                      "expr": "time() - node_boot_time_seconds",
+                      "refId": "A",
+                      "legendFormat": "{{instance}}"
+                    }
+                  ],
+                  "options": {
+                    "graphMode": "none",
+                    "colorMode": "value",
+                    "orientation": "auto",
+                    "textMode": "value_and_name"
+                  },
+                  "fieldConfig": {
+                    "defaults": {
+                      "unit": "s",
+                      "mappings": [],
+                      "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                          { "value": 0, "color": "green" }
+                        ]
+                      }
+                    }
+                  }
+                }
+              ]
             }
