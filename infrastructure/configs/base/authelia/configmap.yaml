@@ -50,6 +50,7 @@ data:
           resources:
             - "^/public-dashboards/.*$"
             - "^/public/.*$"
+            - "^/api/public/.*$"
           policy: bypass
         # High-security services - require 2FA (admins group)
         - domain:
