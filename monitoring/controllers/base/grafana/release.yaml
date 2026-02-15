@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: grafana
-      version: "8.x"
+      version: "10.x"
       sourceRef:
         kind: HelmRepository
         name: grafana
@@ -54,6 +54,7 @@ spec:
         datasources:
           - name: Prometheus
             type: prometheus
+            uid: prometheus_main
             url: http://kube-prometheus-stack-prometheus.monitoring-prd.svc.cluster.local:9090
             access: proxy
             isDefault: true
@@ -98,6 +99,10 @@ spec:
                   "id": 1,
                   "title": "Node CPU Usage",
                   "type": "gauge",
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "prometheus_main"
+                  },
                   "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
                   "targets": [
                     {
@@ -131,6 +136,10 @@ spec:
                   "id": 2,
                   "title": "Node Memory Usage",
                   "type": "gauge",
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "prometheus_main"
+                  },
                   "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
                   "targets": [
                     {
@@ -164,6 +173,10 @@ spec:
                   "id": 3,
                   "title": "Pod Count by Status",
                   "type": "stat",
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "prometheus_main"
+                  },
                   "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
                   "targets": [
                     {
@@ -194,6 +207,10 @@ spec:
                   "id": 4,
                   "title": "Cluster Uptime",
                   "type": "stat",
+                  "datasource": {
+                    "type": "prometheus",
+                    "uid": "prometheus_main"
+                  },
                   "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
                   "targets": [
                     {
