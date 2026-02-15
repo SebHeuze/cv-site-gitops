@@ -44,6 +44,12 @@ data:
             - api.sebastien.sh
             - auth.sebastien.sh
           policy: bypass
+        # Grafana public dashboards - no auth required
+        - domain:
+            - grafana.sebastien.sh
+          resources:
+            - "^/public-dashboards/.*$"
+          policy: bypass
         # High-security services - require 2FA (admins group)
         - domain:
             - akhq.sebastien.sh
