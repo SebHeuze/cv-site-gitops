@@ -1,270 +1,88 @@
-# CV-Site GitOps Repository
+# CV Site GitOps
 
-Complete Kubernetes infrastructure using GitOps with **Flux CD**, **Traefik**, **Authelia**, and **HashiCorp Vault**.
+Kubernetes infrastructure for [cv-site](https://github.com/sebheuze/cv-site-package) using **Flux CD**, managed with Kustomize overlays.
 
 ## Architecture
 
 ```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                              Flux CD (GitOps)                                 │
-│                                                                               │
-│  ┌────────────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐               │
-│  │ Infrastructure │  │Databases │  │   Apps   │  │Monitoring│               │
-│  │  Controllers   │  │          │  │          │  │          │               │
-│  └───────┬────────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘               │
-└──────────┼────────────────┼─────────────┼────────────┼──────────────────────┘
-           │                │             │            │
-           ▼                ▼             ▼            ▼
-     ┌──────────┐     ┌──────────┐  ┌──────────┐  ┌──────────┐   ┌──────────┐
-     │ Traefik  │     │CloudNPG  │  │ Frontend │  │Prometheus│   │  Vault   │
-     │cert-mgr  │     │PostgreSQL│  │ Backend  │  │ Grafana  │   │(Proxmox) │
-     │ Strimzi  │     │  Kafka   │  │ Ingester │  │  AKHQ    │   │ External │
-     │ ESO      │     └──────────┘  └──────────┘  └──────────┘   └──────────┘
-     └──────────┘           ▲                                          │
-                            └──────────── secrets sync ────────────────┘
+Flux CD (GitOps)
+  |
+  ├── infrastructure/    Traefik, cert-manager, Strimzi, CloudNativePG, ESO
+  ├── databases/         PostgreSQL (CNPG), Kafka (Strimzi KRaft)
+  ├── apps/              frontend, trading-simulator, binance-ingester, AKHQ
+  └── monitoring/        Prometheus, Grafana
 ```
+
+Secrets are synced from an external **HashiCorp Vault** instance via External Secrets Operator. No secret values are stored in this repository.
 
 ## Directory Structure
 
 ```
-cv-site-gitops/
-├── clusters/                    # Flux sync points per cluster
-│   ├── local/                   # Local development cluster
-│   │   ├── infrastructure.yaml  # Flux Kustomization
-│   │   ├── databases.yaml
-│   │   ├── apps.yaml
-│   │   └── monitoring.yaml
-│   └── production/              # Production cluster
-│       └── (same structure)
-├── infrastructure/
-│   ├── controllers/             # HelmReleases for operators
-│   │   ├── base/                # cert-manager, traefik, strimzi, vault, etc.
-│   │   ├── local/
-│   │   └── production/
-│   └── configs/                 # ClusterIssuers, middlewares, etc.
-│       ├── base/
-│       ├── local/               # IngressRoutes for *.k8s.local
-│       └── production/          # IngressRoutes for *.sebastien.sh
-├── databases/
-│   ├── base/                    # CloudNativePG + Kafka clusters
-│   ├── local/                   # Single-node for dev
-│   └── production/              # Multi-node HA
-├── apps/
-│   ├── base/                    # cv-site + akhq
-│   ├── local/
-│   └── production/
-├── monitoring/
-│   └── controllers/             # Prometheus, Grafana
-│       ├── base/
-│       ├── local/
-│       └── production/
-└── README.md
+clusters/
+  ├── local/              Flux sync point for dev
+  └── production/         Flux sync point for prod
+infrastructure/
+  ├── controllers/        HelmReleases (traefik, cert-manager, strimzi, cnpg, eso)
+  └── configs/            Namespaces, ClusterIssuers, middlewares, IngressRoutes
+databases/                CloudNativePG PostgreSQL + Strimzi Kafka clusters
+apps/                     Application deployments (cv-site + AKHQ)
+monitoring/               kube-prometheus-stack + Grafana
 ```
+
+Each layer uses `base/`, `local/`, and `production/` overlays via Kustomize.
 
 ## Prerequisites
 
-1. **Kubernetes Cluster** (K3s, Kind, or managed cluster)
-2. **Flux CLI**:
-   ```bash
-   curl -s https://fluxcd.io/install.sh | sudo bash
-   ```
-3. **GitHub Personal Access Token** with repo permissions
+- Kubernetes cluster (K3s, Kind, or managed)
+- [Flux CLI](https://fluxcd.io/flux/installation/)
+- HashiCorp Vault (external) - see [INSTALL_VAULT.md](INSTALL_VAULT.md)
 
-## Quick Start
-
-### 1. Bootstrap Flux (Production)
+## Bootstrap
 
 ```bash
+# Production
 flux bootstrap github \
-  --owner=sebheuze \
+  --owner=<your-github-username> \
   --repository=cv-site-gitops \
   --branch=main \
   --path=clusters/production \
   --personal
-```
 
-### 2. Bootstrap Flux (Local Development)
-
-```bash
+# Local
 flux bootstrap github \
-  --owner=sebheuze \
+  --owner=<your-github-username> \
   --repository=cv-site-gitops \
   --branch=main \
   --path=clusters/local \
   --personal
 ```
 
-### 3. Setup External HashiCorp Vault
-
-Vault runs as a separate VM on Proxmox. See **[INSTALL_VAULT.md](INSTALL_VAULT.md)** for complete installation instructions.
-
-**Quick summary:**
-1. Create Ubuntu VM on Proxmox
-2. Install HashiCorp Vault
-3. Initialize and unseal Vault
-4. Create secrets for cv-site-gitops
-
-### 4. Connect Kubernetes to External Vault
-
-After Vault is running on Proxmox:
-
+Then create the Vault token secret:
 ```bash
-# Update the ClusterSecretStore with your Vault VM IP
-# Edit: infrastructure/configs/base/external-secrets/cluster-secret-store.yaml
-
-# Create the Vault token secret in Kubernetes
 kubectl create secret generic vault-token \
   -n external-secrets \
   --from-literal=token=<your-vault-token>
 ```
 
-### 5. Add Secrets to Vault (on Vault VM)
-
-```bash
-export VAULT_ADDR='http://<vault-vm-ip>:8200'
-vault login
-
-# GHCR credentials
-vault kv put secret/cv-site/ghcr \
-  username=sebheuze \
-  password=<github-pat>
-
-# PostgreSQL credentials
-vault kv put secret/cv-site/postgres \
-  username=cvuser \
-  password=<secure-password>
-
-# Authelia secrets
-vault kv put secret/cv-site/authelia \
-  jwt-secret=$(openssl rand -hex 32) \
-  session-secret=$(openssl rand -hex 32) \
-  storage-encryption-key=$(openssl rand -hex 32)
-```
-
 ## Dependency Chain
 
-Flux Kustomizations deploy in this order using `dependsOn`:
-
 ```
-                                    ┌─────────────────────┐
-                                    │  External Vault     │
-                                    │  (Proxmox VM)       │
-                                    └──────────┬──────────┘
-                                               │ secrets
-                                               ▼
-1. infra-controllers → Traefik, cert-manager, Strimzi, CNPG, ESO
-          │
-          ▼
-2. infra-configs → Namespaces, ClusterIssuers, middlewares, ClusterSecretStore
-          │
-          ├──────────────────────────────┐
-          ▼                              ▼
-3. databases → PostgreSQL, Kafka    4. monitoring → Prometheus, Grafana
-          │
-          ▼
-5. apps → cv-site (frontend, trading-simulator, binance-ingester), AKHQ
-```
-
-## Access URLs
-
-### Production (*.sebastien.sh)
-
-| Service | URL | Auth |
-|---------|-----|------|
-| Frontend | https://cv.sebastien.sh | Public |
-| API | https://api.sebastien.sh | Public |
-| Authelia | https://auth.sebastien.sh | - |
-| Grafana | https://grafana.sebastien.sh | Authelia (2FA) |
-| AKHQ | https://akhq.sebastien.sh | Authelia (2FA) |
-| Prometheus | https://prometheus.sebastien.sh | Authelia (2FA) |
-
-### Local (*.k8s.local)
-
-| Service | URL | Auth |
-|---------|-----|------|
-| Frontend | https://cv.k8s.local | Public |
-| API | https://api.k8s.local | Public |
-| Authelia | https://auth.k8s.local | - |
-| Grafana | https://grafana.k8s.local | Authelia (1FA) |
-| Traefik | https://traefik.k8s.local | Authelia (1FA) |
-
-## Flux Commands
-
-```bash
-# Check Flux status
-flux get all
-
-# Reconcile immediately
-flux reconcile kustomization apps --with-source
-
-# View HelmRelease status
-flux get helmreleases -A
-
-# Suspend reconciliation (for debugging)
-flux suspend kustomization apps
-
-# Resume reconciliation
-flux resume kustomization apps
-
-# Check logs
-flux logs --level=error
-
-# Export current config
-flux export source git flux-system > backup.yaml
+infra-controllers --> infra-configs --> databases --> apps
+                                    └-> monitoring
 ```
 
 ## Key Components
 
-### CloudNativePG PostgreSQL
-- Operator-managed PostgreSQL cluster
-- 3 instances in production, 1 in local
-- Automatic failover and backup
+| Component | Purpose |
+|---|---|
+| **Traefik** | Ingress controller with TLS termination |
+| **cert-manager** | Automated Let's Encrypt certificates |
+| **Authelia** | SSO with 2FA for admin services |
+| **Strimzi** | Kafka operator (KRaft mode, no Zookeeper) |
+| **CloudNativePG** | PostgreSQL operator |
+| **External Secrets** | Vault-to-Kubernetes secret sync |
+| **Prometheus + Grafana** | Monitoring and dashboards |
 
-### Strimzi Kafka (KRaft mode)
-- Zookeeper-less Kafka cluster
-- 3 controllers + 3 brokers in production
-- Topics: binance-btcusdc-trades, trading-events, analytics-results
+## License
 
-### External Secrets Operator
-- Syncs secrets from HashiCorp Vault
-- 1-hour refresh interval
-- ClusterSecretStore for cluster-wide access
-
-### Authelia
-- Single Sign-On (SSO)
-- Two-Factor Authentication (TOTP)
-- File-based user database
-- Protects: Grafana, AKHQ, Prometheus
-
-## Troubleshooting
-
-```bash
-# Check Kustomization status
-kubectl get kustomizations -n flux-system
-
-# Check HelmRelease status
-kubectl get helmreleases -A
-
-# View events
-kubectl get events --sort-by='.lastTimestamp' -A
-
-# Check Vault status
-kubectl exec -it vault-0 -n vault -- vault status
-
-# Check External Secrets
-kubectl get externalsecrets -A
-kubectl get clustersecretstores
-
-# Check CNPG cluster
-kubectl get clusters -n cv-site-prd
-kubectl cnpg status trading-db -n cv-site-prd
-```
-
-## Migration from ArgoCD
-
-If migrating from ArgoCD:
-
-1. Backup any manual changes
-2. Uninstall ArgoCD: `kubectl delete -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml`
-3. Remove ArgoCD namespace: `kubectl delete namespace argocd`
-4. Bootstrap Flux as described above
+MIT

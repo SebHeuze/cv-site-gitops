@@ -24,3 +24,10 @@ nul
 *.tmp
 *.bak
 *~
+
+# Claude Code
+.claude/
+
+# Environment files
+.env
+.env.*
