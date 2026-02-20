@@ -21,7 +21,7 @@ spec:
         - name: ghcr-secret
       containers:
         - name: binance-ingester
-          image: ghcr.io/sebheuze/cv-site/binance-ingester:main-996ea19
+          image: ghcr.io/sebheuze/cv-site/binance-ingester:main-77cf7c2
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
