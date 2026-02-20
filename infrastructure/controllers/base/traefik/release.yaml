@@ -32,8 +32,6 @@ spec:
         port: 8000
         exposedPort: 80
       websecure:
-        tls:
-          enabled: true
     providers:
       kubernetesCRD:
         enabled: true

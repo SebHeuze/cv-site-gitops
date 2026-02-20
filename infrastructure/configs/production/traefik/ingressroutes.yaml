@@ -136,7 +136,7 @@ spec:
     - match: Host(`prometheus.sebastien.sh`)
       kind: Rule
       services:
-        - name: prometheus
+        - name: kube-prometheus-stack-prometheus
           port: 9090
       middlewares:
         - name: authelia
