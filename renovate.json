@@ -1,24 +1,41 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
+  "extends": [
+    "config:recommended"
+  ],
   "flux": {
     "enabled": true
   },
   "kubernetes": {
-    "fileMatch": ["\\.yaml$"]
+    "managerFilePatterns": [
+      "/\\.yaml$/"
+    ]
   },
   "packageRules": [
     {
       "description": "Group all monitoring stack updates (Prometheus + Grafana)",
-      "matchManagers": ["flux", "kubernetes"],
-      "matchPackagePatterns": ["^prometheus", "^grafana"],
-      "groupName": "Monitoring stack"
+      "matchManagers": [
+        "flux",
+        "kubernetes"
+      ],
+      "groupName": "Monitoring stack",
+      "matchPackageNames": [
+        "/^prometheus/",
+        "/^grafana/"
+      ]
     },
     {
       "description": "Group all infrastructure controllers",
-      "matchManagers": ["flux"],
-      "matchPackagePatterns": ["^traefik", "^cert-manager", "^external-secrets", "^strimzi"],
-      "groupName": "Infrastructure controllers"
+      "matchManagers": [
+        "flux"
+      ],
+      "groupName": "Infrastructure controllers",
+      "matchPackageNames": [
+        "/^traefik/",
+        "/^cert-manager/",
+        "/^external-secrets/",
+        "/^strimzi/"
+      ]
     }
   ]
 }
