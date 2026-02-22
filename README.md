@@ -35,7 +35,7 @@ Each layer uses `base/`, `local/`, and `production/` overlays via Kustomize.
 
 - Kubernetes cluster (K3s, Kind, or managed)
 - [Flux CLI](https://fluxcd.io/flux/installation/)
-- HashiCorp Vault (external) - see [INSTALL_VAULT.md](INSTALL_VAULT.md)
+- HashiCorp Vault (external)
 
 ## Bootstrap
 
