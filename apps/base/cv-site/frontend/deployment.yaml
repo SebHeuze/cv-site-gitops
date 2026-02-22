@@ -19,7 +19,7 @@ spec:
         - name: ghcr-secret
       containers:
         - name: frontend
-          image: ghcr.io/sebheuze/cv-site/frontend:main-917aa82
+          image: ghcr.io/sebheuze/cv-site/frontend:main-1621651
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
