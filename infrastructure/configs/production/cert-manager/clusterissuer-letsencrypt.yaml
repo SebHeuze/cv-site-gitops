@@ -6,7 +6,7 @@ metadata:
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: [REDACTED_EMAIL]
+    email: contact@sebastien.sh
     privateKeySecretRef:
       name: letsencrypt-prod-account-key
     solvers:
@@ -33,7 +33,7 @@ metadata:
 spec:
   acme:
     server: https://acme-staging-v02.api.letsencrypt.org/directory
-    email: [REDACTED_EMAIL]
+    email: contact@sebastien.sh
     privateKeySecretRef:
       name: letsencrypt-staging-account-key
     solvers:
