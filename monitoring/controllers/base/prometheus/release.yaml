@@ -54,10 +54,6 @@ spec:
         serviceMonitorSelector: {}
         # Additional scrape configs
         additionalScrapeConfigs:
-          - job_name: 'kafka-exporter'
-            static_configs:
-              - targets:
-                  - 'cv-kafka-cluster-kafka-exporter.kafka-prd.svc.cluster.local:9404'
           - job_name: 'binance-ingester'
             metrics_path: /actuator/prometheus
             static_configs:
