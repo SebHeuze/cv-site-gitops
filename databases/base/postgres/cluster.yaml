@@ -42,7 +42,7 @@ spec:
       max_parallel_maintenance_workers: "2"
 
   monitoring:
-    enablePodMonitor: true
+    enablePodMonitor: false
 
   resources:
     requests:
