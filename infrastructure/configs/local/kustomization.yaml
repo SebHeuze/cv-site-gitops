@@ -67,6 +67,8 @@ patches:
                 policy: one_factor
               - domain: traefik.k8s.local
                 policy: one_factor
+              - domain: umami.k8s.local
+                policy: one_factor
 
           session:
             name: authelia_session

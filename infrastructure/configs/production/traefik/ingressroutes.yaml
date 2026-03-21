@@ -143,3 +143,25 @@ spec:
           namespace: authelia
   tls:
     secretName: prometheus-tls
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: umami
+  namespace: monitoring-prd
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`umami.sebastien.sh`)
+      kind: Rule
+      services:
+        - name: umami
+          port: 3000
+      middlewares:
+        - name: authelia
+          namespace: authelia
+  tls:
+    secretName: umami-tls

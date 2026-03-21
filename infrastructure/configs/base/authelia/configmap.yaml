@@ -52,11 +52,19 @@ data:
             - "^/public/.*$"
             - "^/api/public/.*$"
           policy: bypass
+        # Umami tracking endpoints - no auth required
+        - domain:
+            - umami.sebastien.sh
+          resources:
+            - "^/script\\.js$"
+            - "^/api/send$"
+          policy: bypass
         # High-security services - require 2FA (admins group)
         - domain:
             - akhq.sebastien.sh
             - grafana.sebastien.sh
             - prometheus.sebastien.sh
+            - umami.sebastien.sh
           subject:
             - ["group:admins"]
           policy: two_factor

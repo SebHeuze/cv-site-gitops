@@ -143,3 +143,25 @@ spec:
           namespace: authelia
   tls:
     secretName: traefik-k8s-local-tls
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: umami
+  namespace: monitoring-prd
+  annotations:
+    cert-manager.io/cluster-issuer: selfsigned-issuer
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`umami.k8s.local`)
+      kind: Rule
+      services:
+        - name: umami
+          port: 3000
+      middlewares:
+        - name: authelia
+          namespace: authelia
+  tls:
+    secretName: umami-k8s-local-tls
