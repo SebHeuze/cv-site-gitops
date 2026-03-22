@@ -15,7 +15,7 @@ spec:
       services:
         - name: frontend
           port: 80
-    - match: Host(`cv.k8s.local`) && PathPrefix(`/t/`)
+    - match: Host(`cv.k8s.local`) && (Path(`/t/script.js`) || Path(`/t/api/send`))
       kind: Rule
       services:
         - name: umami
