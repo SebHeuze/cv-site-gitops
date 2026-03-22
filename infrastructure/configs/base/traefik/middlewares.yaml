@@ -53,6 +53,16 @@ spec:
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
+  name: strip-analytics-prefix
+  namespace: cv-site-prd
+spec:
+  stripPrefix:
+    prefixes:
+      - /t
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
   name: redirect-to-cv
   namespace: cv-site-prd
 spec:

@@ -37,6 +37,15 @@ spec:
       services:
         - name: frontend
           port: 80
+    - match: Host(`cv.sebastien.sh`) && PathPrefix(`/t/`)
+      kind: Rule
+      services:
+        - name: umami
+          namespace: monitoring-prd
+          port: 3000
+      middlewares:
+        - name: strip-analytics-prefix
+          namespace: cv-site-prd
   tls:
     secretName: frontend-tls
 ---
