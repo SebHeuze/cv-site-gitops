@@ -8,6 +8,10 @@ resources:
   - binance-ingester/service.yaml
   - trading-simulator/deployment.yaml
   - trading-simulator/service.yaml
-  - frontend/configmap.yaml
   - frontend/deployment.yaml
   - frontend/service.yaml
+configMapGenerator:
+  - name: frontend-config
+    namespace: cv-site-prd
+    files:
+      - frontend/config.json
