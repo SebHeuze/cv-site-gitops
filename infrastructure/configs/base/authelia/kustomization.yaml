@@ -3,6 +3,10 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
-  - configmap.yaml
   - secrets.yaml
   - pvc.yaml
+configMapGenerator:
+  - name: authelia-config
+    namespace: authelia
+    files:
+      - configuration.yml
