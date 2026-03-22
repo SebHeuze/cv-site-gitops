@@ -59,16 +59,20 @@ data:
             - "^/script\\.js$"
             - "^/api/send$"
           policy: bypass
-        # High-security services - require 2FA
+        # High-security services - require 2FA (admins group)
         - domain:
             - akhq.sebastien.sh
             - grafana.sebastien.sh
             - prometheus.sebastien.sh
             - umami.sebastien.sh
+          subject:
+            - ["group:admins"]
           policy: two_factor
-        # Other protected services - require password only
+        # Other protected services - require password only (admins group)
         - domain:
             - "*.sebastien.sh"
+          subject:
+            - ["group:admins"]
           policy: one_factor
 
     session:
