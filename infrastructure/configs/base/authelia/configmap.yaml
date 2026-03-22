@@ -68,12 +68,6 @@ data:
           subject:
             - ["group:admins"]
           policy: two_factor
-        # Other protected services - require password only (admins group)
-        - domain:
-            - "*.sebastien.sh"
-          subject:
-            - ["group:admins"]
-          policy: one_factor
 
     session:
       name: authelia_session
