@@ -4,3 +4,10 @@ metadata:
   name: strimzi-system
   labels:
     app.kubernetes.io/component: kafka-operator
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kafka-prd
+  labels:
+    app.kubernetes.io/component: kafka
