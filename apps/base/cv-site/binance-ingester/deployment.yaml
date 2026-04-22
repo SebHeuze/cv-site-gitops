@@ -30,9 +30,9 @@ spec:
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: cv-kafka-cluster-kafka-bootstrap.kafka-prd.svc.cluster.local:9092
             - name: BINANCE_WS_URL
-              value: wss://stream.binance.com:9443/ws/btcusdc@aggTrade
+              value: wss://stream.binance.com:9443/ws/btcusdt@aggTrade
             - name: KAFKA_TOPICS_BINANCE_TRADES
-              value: binance-btcusdc-trades
+              value: binance-btcusdt-trades
             - name: SPRING_PROFILES_ACTIVE
               value: production
           resources:

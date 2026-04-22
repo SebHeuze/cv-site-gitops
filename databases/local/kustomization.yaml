@@ -100,7 +100,7 @@ patches:
   # Reduce topic replicas
   - target:
       kind: KafkaTopic
-      name: binance-btcusdc-trades
+      name: binance-btcusdt-trades
     patch: |
       - op: replace
         path: /spec/partitions

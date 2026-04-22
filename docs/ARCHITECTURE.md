@@ -3,6 +3,7 @@
 ## Overview
 
 This GitOps repository implements a production-grade Kubernetes deployment using:
+
 - **Helm** for templating and package management
 - **Argo CD** for GitOps continuous deployment
 - **Traefik** for ingress routing
@@ -124,7 +125,7 @@ Wave 4: Ingress
                     │  │  └─────────┘  └─────────┘  └─────────┘    │  │
                     │  │                                           │  │
                     │  │  Topics:                                  │  │
-                    │  │  - binance-btcusdc-trades (3 partitions)  │  │
+                    │  │  - binance-btcusdt-trades (3 partitions)  │  │
                     │  │  - trading-events (3 partitions)          │  │
                     │  │  - analytics-results (1 partition)        │  │
                     │  └───────────────────────────────────────────┘  │
@@ -142,12 +143,14 @@ Wave 4: Ingress
 ### Authelia Protection
 
 Protected services require 2FA authentication via Authelia:
+
 - Grafana
 - AKHQ
 - Prometheus
 - Argo CD
 
 Public services (no auth required):
+
 - Frontend (cv.sebastien.sh)
 - API (api.sebastien.sh)
 - Auth Portal (auth.sebastien.sh)
@@ -173,35 +176,36 @@ access_control:
 Current implementation uses base64-encoded secrets in ConfigMaps.
 
 For production, consider:
+
 - **Sealed Secrets**: Encrypt secrets in Git
 - **External Secrets Operator**: Sync from Vault/AWS SM
 - **HashiCorp Vault**: Dynamic secrets
 
 ## Resource Allocation
 
-| Component | Requests | Limits |
-|-----------|----------|--------|
-| Frontend | 128Mi / 100m | 256Mi / 500m |
-| Trading Simulator | 768Mi / 500m | 1.5Gi / 1.5 |
-| Binance Ingester | 512Mi / 250m | 1Gi / 1 |
-| PostgreSQL | 512Mi / 250m | 2Gi / 1 |
-| Kafka Broker | 1Gi / 500m | 2Gi / 1 |
-| Kafka Controller | 512Mi / 250m | 1Gi / 500m |
-| Prometheus | 1Gi / 500m | 2Gi / 1 |
-| Grafana | 256Mi / 100m | 512Mi / 500m |
-| AKHQ | 512Mi / 250m | 1Gi / 1 |
-| Authelia | 128Mi / 100m | 256Mi / 250m |
+| Component         | Requests     | Limits       |
+| ----------------- | ------------ | ------------ |
+| Frontend          | 128Mi / 100m | 256Mi / 500m |
+| Trading Simulator | 768Mi / 500m | 1.5Gi / 1.5  |
+| Binance Ingester  | 512Mi / 250m | 1Gi / 1      |
+| PostgreSQL        | 512Mi / 250m | 2Gi / 1      |
+| Kafka Broker      | 1Gi / 500m   | 2Gi / 1      |
+| Kafka Controller  | 512Mi / 250m | 1Gi / 500m   |
+| Prometheus        | 1Gi / 500m   | 2Gi / 1      |
+| Grafana           | 256Mi / 100m | 512Mi / 500m |
+| AKHQ              | 512Mi / 250m | 1Gi / 1      |
+| Authelia          | 128Mi / 100m | 256Mi / 250m |
 
 ## Storage Requirements
 
-| PVC | Size | Storage Class |
-|-----|------|---------------|
-| postgres-pvc | 20Gi | local-path |
-| prometheus-data-pvc | 50Gi | local-path |
-| grafana-data-pvc | 10Gi | local-path |
-| authelia-pvc | 1Gi | local-path |
-| kafka-broker-* | 30Gi x 3 | local-path |
-| kafka-controller-* | 30Gi x 3 | local-path |
+| PVC                 | Size     | Storage Class |
+| ------------------- | -------- | ------------- |
+| postgres-pvc        | 20Gi     | local-path    |
+| prometheus-data-pvc | 50Gi     | local-path    |
+| grafana-data-pvc    | 10Gi     | local-path    |
+| authelia-pvc        | 1Gi      | local-path    |
+| kafka-broker-\*     | 30Gi x 3 | local-path    |
+| kafka-controller-\* | 30Gi x 3 | local-path    |
 
 **Total: ~270Gi**
 
@@ -232,6 +236,7 @@ Base values are in `charts/<name>/values.yaml`.
 Environment overrides are in `environments/<env>/<name>-values.yaml`.
 
 Argo CD merges them:
+
 ```yaml
 source:
   path: charts/cv-site

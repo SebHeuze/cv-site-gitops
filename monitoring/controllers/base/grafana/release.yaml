@@ -247,7 +247,7 @@ spec:
                 },
                 {
                   "id": 5,
-                  "title": "binance-btcusdc-trades - Messages/sec",
+                  "title": "binance-btcusdt-trades - Messages/sec",
                   "type": "timeseries",
                   "datasource": {
                     "type": "prometheus",
@@ -256,7 +256,7 @@ spec:
                   "gridPos": { "x": 0, "y": 16, "w": 18, "h": 8 },
                   "targets": [
                     {
-                      "expr": "sum(rate(kafka_topic_partition_current_offset{topic=\"binance-btcusdc-trades\"}[1m]))",
+                      "expr": "sum(rate(kafka_topic_partition_current_offset{topic=\"binance-btcusdt-trades\"}[1m]))",
                       "refId": "A",
                       "legendFormat": "msg/s"
                     }
@@ -290,7 +290,7 @@ spec:
                 },
                 {
                   "id": 6,
-                  "title": "binance-btcusdc-trades - Total messages",
+                  "title": "binance-btcusdt-trades - Total messages",
                   "type": "stat",
                   "datasource": {
                     "type": "prometheus",
@@ -299,7 +299,7 @@ spec:
                   "gridPos": { "x": 18, "y": 16, "w": 6, "h": 8 },
                   "targets": [
                     {
-                      "expr": "sum(kafka_topic_partition_current_offset{topic=\"binance-btcusdc-trades\"})",
+                      "expr": "sum(kafka_topic_partition_current_offset{topic=\"binance-btcusdt-trades\"})",
                       "refId": "A",
                       "legendFormat": "Total"
                     }
