@@ -1,0 +1,54 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: uptime-kuma-kafka-push
+  namespace: monitoring-prd
+spec:
+  schedule: "*/2 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      ttlSecondsAfterFinished: 600
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: push
+              image: alpine:3.20
+              env:
+                - name: PUSH_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: uptime-kuma-push
+                      key: push-url
+                - name: PROM_URL
+                  value: http://kube-prometheus-stack-prometheus.monitoring-prd.svc.cluster.local:9090
+                - name: KAFKA_TOPIC
+                  value: binance-btcusdt-trades
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -eu
+                  apk add --no-cache curl jq >/dev/null
+                  QUERY="sum(rate(kafka_topic_partition_current_offset{topic=\"${KAFKA_TOPIC}\"}[5m]))"
+                  RATE=$(curl -sf --get --data-urlencode "query=${QUERY}" "${PROM_URL}/api/v1/query" \
+                    | jq -r '.data.result[0].value[1] // "0"')
+                  echo "rate=${RATE}"
+                  if awk "BEGIN {exit !(${RATE} > 0)}"; then
+                    curl -sf "${PUSH_URL}?status=up&msg=rate=${RATE}&ping="
+                  else
+                    echo "no traffic, skipping push (Kuma will time out monitor)"
+                    exit 1
+                  fi
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi
