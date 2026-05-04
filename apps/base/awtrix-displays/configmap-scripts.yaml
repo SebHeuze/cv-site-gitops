@@ -1,0 +1,168 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: awtrix-scripts
+  namespace: homelab-prd
+data:
+  awtrix_setup.py: |
+    #!/usr/bin/env python3
+    """Configure les apps natives Awtrix : duree 3s, masque heure/date/batterie."""
+    import os
+    import asyncio
+    import aiohttp
+
+    AWTRIX_IP = os.environ["AWTRIX_IP"]
+
+    SETTINGS = {
+        "ATIME": 1,
+        "TIM":   False,
+        "DAT":   False,
+        "BAT":   False,
+        "TEMP":  False,
+        "HUM":   False,
+    }
+
+    async def main():
+        url = f"http://{AWTRIX_IP}/api/settings"
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=SETTINGS) as r:
+                print(f"POST /api/settings -> HTTP {r.status}")
+                print(f"Settings appliques : {SETTINGS}")
+
+    if __name__ == "__main__":
+        asyncio.run(main())
+
+  cpu_display.py: |
+    #!/usr/bin/env python3
+    import os
+    import asyncio
+    import aiohttp
+
+    PROMETHEUS_URL = os.environ["PROMETHEUS_URL"]
+    INSTANCE       = os.environ["PROMETHEUS_INSTANCE"]
+    AWTRIX_IP      = os.environ["AWTRIX_IP"]
+    APP_NAME       = "cpu"
+    INTERVAL       = 10
+
+    PROMQL = f'100 - (avg(rate(node_cpu_seconds_total{{mode="idle",instance="{INSTANCE}"}}[1m])) * 100)'
+
+    async def get_cpu_percent() -> float:
+        url = f"{PROMETHEUS_URL}/api/v1/query"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params={"query": PROMQL}) as r:
+                data = await r.json()
+                result = data["data"]["result"]
+                if not result:
+                    raise RuntimeError(f"Aucun resultat pour la requete (verifier INSTANCE={INSTANCE})")
+                return float(result[0]["value"][1])
+
+    async def send_to_awtrix(cpu: float):
+        if cpu >= 80:
+            color = "#FF4444"
+        elif cpu >= 50:
+            color = "#FFA500"
+        else:
+            color = "#00FF00"
+
+        payload = {
+            "text":     f"{cpu:.0f}%",
+            "color":    color,
+            "icon":     "26409",
+            "duration": 3,
+            "lifetime": INTERVAL * 2,
+        }
+
+        url = f"http://{AWTRIX_IP}/api/custom?name={APP_NAME}"
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=payload) as r:
+                return r.status
+
+    async def switch_to_app():
+        url = f"http://{AWTRIX_IP}/api/switch"
+        async with aiohttp.ClientSession() as session:
+            await session.post(url, json={"name": APP_NAME})
+
+    async def main():
+        print(f"Demarrage - Prometheus @ {PROMETHEUS_URL} (instance={INSTANCE}) -> Awtrix @ {AWTRIX_IP} (toutes les {INTERVAL}s)")
+        first = True
+        while True:
+            try:
+                cpu    = await get_cpu_percent()
+                status = await send_to_awtrix(cpu)
+                print(f"{cpu:.1f} %  ->  Awtrix HTTP {status}", flush=True)
+                if first:
+                    await switch_to_app()
+                    first = False
+            except Exception as e:
+                print(f"Erreur : {e}", flush=True)
+            await asyncio.sleep(INTERVAL)
+
+    if __name__ == "__main__":
+        asyncio.run(main())
+
+  elec_display.py: |
+    #!/usr/bin/env python3
+    import os
+    import asyncio
+    import aiohttp
+    from tapo import ApiClient
+
+    TAPO_EMAIL    = os.environ["TAPO_EMAIL"]
+    TAPO_PASSWORD = os.environ["TAPO_PASSWORD"]
+    TAPO_IP       = os.environ["TAPO_IP"]
+    AWTRIX_IP     = os.environ["AWTRIX_IP"]
+    APP_NAME      = "elec"
+    INTERVAL      = 10
+
+    async def get_power_watts() -> float:
+        client = ApiClient(TAPO_EMAIL, TAPO_PASSWORD)
+        device = await client.p110(TAPO_IP)
+        energy = await device.get_energy_usage()
+        return energy.current_power / 1000
+
+    async def send_to_awtrix(watts: float):
+        if watts >= 1000:
+            text  = f"{watts / 1000:.1f}kW"
+            color = "#FF4444"
+        elif watts >= 300:
+            text  = f"{watts:.0f}W"
+            color = "#FFA500"
+        else:
+            text  = f"{watts:.0f}W"
+            color = "#00FF00"
+
+        payload = {
+            "text":     text,
+            "color":    color,
+            "icon":     "44432",
+            "duration": 3,
+            "lifetime": INTERVAL * 2,
+        }
+
+        url = f"http://{AWTRIX_IP}/api/custom?name={APP_NAME}"
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=payload) as r:
+                return r.status
+
+    async def switch_to_app():
+        url = f"http://{AWTRIX_IP}/api/switch"
+        async with aiohttp.ClientSession() as session:
+            await session.post(url, json={"name": APP_NAME})
+
+    async def main():
+        print(f"Demarrage - Tapo P110 @ {TAPO_IP} -> Awtrix @ {AWTRIX_IP} (toutes les {INTERVAL}s)")
+        first = True
+        while True:
+            try:
+                watts  = await get_power_watts()
+                status = await send_to_awtrix(watts)
+                print(f"{watts:.1f} W  ->  Awtrix HTTP {status}", flush=True)
+                if first:
+                    await switch_to_app()
+                    first = False
+            except Exception as e:
+                print(f"Erreur : {e}", flush=True)
+            await asyncio.sleep(INTERVAL)
+
+    if __name__ == "__main__":
+        asyncio.run(main())

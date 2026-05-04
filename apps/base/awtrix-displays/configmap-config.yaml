@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: awtrix-config
+  namespace: homelab-prd
+data:
+  AWTRIX_IP: "192.168.0.78"
+  TAPO_IP: "192.168.0.79"
+  PROMETHEUS_URL: "http://192.168.10.50:9090"
+  PROMETHEUS_INSTANCE: "192.168.10.50:9100"

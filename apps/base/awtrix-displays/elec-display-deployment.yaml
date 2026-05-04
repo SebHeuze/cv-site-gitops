@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elec-display
+  namespace: homelab-prd
+  labels:
+    app: elec-display
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: elec-display
+  template:
+    metadata:
+      labels:
+        app: elec-display
+    spec:
+      containers:
+        - name: elec-display
+          image: python:3.12-slim
+          command: ["sh", "-c"]
+          args:
+            - "pip install --quiet --no-cache-dir aiohttp tapo && python /app/elec_display.py"
+          envFrom:
+            - configMapRef:
+                name: awtrix-config
+          env:
+            - name: TAPO_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: awtrix-tapo-credentials
+                  key: email
+            - name: TAPO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: awtrix-tapo-credentials
+                  key: password
+          volumeMounts:
+            - name: scripts
+              mountPath: /app
+          resources:
+            requests:
+              memory: 64Mi
+              cpu: 50m
+            limits:
+              memory: 256Mi
+              cpu: 500m
+      volumes:
+        - name: scripts
+          configMap:
+            name: awtrix-scripts
