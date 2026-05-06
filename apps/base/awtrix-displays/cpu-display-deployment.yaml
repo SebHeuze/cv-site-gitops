@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: cpu-display
-          image: python:3.12-slim
+          image: python:3.14-slim
           command: ["sh", "-c"]
           args:
             - "pip install --quiet --no-cache-dir aiohttp && python /app/cpu_display.py"
